@@ -13,8 +13,8 @@ export interface Storage {
   getItem(key: string): Promise<string | null>;
   setItem(key: string, value: string): Promise<unknown>;
 }
-const collections: Collection[] = ['players', 'tennis', 'routines', 'gym', 'other'];
-function assertDatabase(value: unknown): asserts value is Database {
+export const collections: Collection[] = ['players', 'tennis', 'routines', 'gym', 'other'];
+export function assertDatabase(value: unknown): asserts value is Database {
   if (!value || typeof value !== 'object') throw new Error('Stored data is not a valid Court Log database.');
   for (const key of collections) {
     const records = Reflect.get(value, key);

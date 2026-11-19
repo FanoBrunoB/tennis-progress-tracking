@@ -28,8 +28,8 @@ interface AppContextValue {
   notify(text: string, undo?: () => Promise<void>): void;
 }
 const AppContext = createContext<AppContextValue | null>(null);
-const local = createLocalRepository(AsyncStorage);
-export function AppProvider({ children, repository = local }: { children: React.ReactNode; repository?: Repository }) {
+export const localRepository = createLocalRepository(AsyncStorage);
+export function AppProvider({ children, repository = localRepository }: { children: React.ReactNode; repository?: Repository }) {
   const [data, setData] = useState(emptyDatabase);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string>();

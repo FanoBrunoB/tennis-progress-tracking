@@ -9,7 +9,8 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { AppProvider, useApp } from '../state/AppProvider';
+import { useApp } from '../state/AppProvider';
+import { CloudGate } from '../state/CloudGate';
 import { ThemeProvider } from '../state/ThemeProvider';
 import { Button, T, styles } from '../ui/components';
 
@@ -27,5 +28,5 @@ function Content() {
 export default function RootLayout() {
   const [loaded, error] = useFonts({ BarlowCondensed_600SemiBold, BarlowCondensed_700Bold, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold });
   if (error) throw error;
-  return <SafeAreaProvider><ThemeProvider><AppProvider>{loaded ? <Content /> : <View style={{ flex: 1, backgroundColor: '#0E1C3D', justifyContent: 'center' }}><ActivityIndicator color="#E3B341" /></View>}</AppProvider></ThemeProvider></SafeAreaProvider>;
+  return <SafeAreaProvider><ThemeProvider>{loaded ? <CloudGate><Content /></CloudGate> : <View style={{ flex: 1, backgroundColor: '#0E1C3D', justifyContent: 'center' }}><ActivityIndicator color="#E3B341" /></View>}</ThemeProvider></SafeAreaProvider>;
 }

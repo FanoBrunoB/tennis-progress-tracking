@@ -1,8 +1,17 @@
 # Backend adapter
 
-Court Log currently stores a versioned database in AsyncStorage, which uses
-device storage on iOS and browser storage on web. No data leaves the device.
-Clearing that storage removes the data; this is not a backup or a sync service.
+Court Log has two adapters. Without Firebase settings it stores a versioned
+database in AsyncStorage (device storage on iOS, browser storage on web) and no
+data leaves the device. With the `EXPO_PUBLIC_FIREBASE_*` variables from
+`.env.example` set, `CloudGate` requires an email/password sign-in and stores
+each record as a Firestore document at `users/{uid}/{collection}/{id}`
+(`src/data/cloudRepository.ts`, `src/data/firebase.ts`). On the first sign-in on
+a device, on-device logs are copied once into an empty account.
+
+Firestore rules must restrict `users/{uid}/**` to `request.auth.uid == uid`.
+Create the user in Firebase Console; the app has no sign-up screen. On web,
+Firestore keeps an IndexedDB cache, so logs load offline and changes made offline
+sync on reconnect. Concurrent edits to the same record resolve last-write-wins.
 
 The seam is `Repository` in `src/data/repository.ts`. Screens use `useApp()`;
 they never import AsyncStorage. Provide another implementation through

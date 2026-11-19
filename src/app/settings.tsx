@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import type { Player } from '../domain/models';
 import { themes, type Season } from '../domain/theme';
 import { useApp } from '../state/AppProvider';
+import { useSession } from '../state/CloudGate';
 import { Button, Card, DeleteButton, Field, Screen, Sheet, T, closeForm, fonts, styles } from '../ui/components';
 
 export default function SettingsScreen() {
@@ -14,6 +15,7 @@ export default function SettingsScreen() {
   const [doubles, setDoubles] = useState('');
   const [error, setError] = useState<string>();
   const [busy, setBusy] = useState(false);
+  const session = useSession();
   const demo = Object.values(data).some(records => records.some(r => r.demo));
   const savePlayer = async () => {
     if (!editing) return;
@@ -24,7 +26,9 @@ export default function SettingsScreen() {
     setBusy(false);
   };
   return <Screen title="Settings" action={<Button label="Done" onPress={closeForm} />}>
-    <Card><T heading style={{ fontSize: 26 }}>Your court. Your progress.</T><T muted style={{ lineHeight: 22 }}>Saved on this device. No account or cloud connection. Clearing browser or app storage removes your logs.</T></Card>
+    <Card><T heading style={{ fontSize: 26 }}>Your court. Your progress.</T>{session
+      ? <><T muted style={{ lineHeight: 22 }}>Synced to {session.email ?? 'your account'}. Sign in on another device to see the same logs.</T><Button label="Sign out" secondary onPress={() => void session.signOut()} /></>
+      : <T muted style={{ lineHeight: 22 }}>Saved on this device. No account or cloud connection. Clearing browser or app storage removes your logs.</T>}</Card>
     <T heading style={{ fontSize: 25 }}>Saved players</T>
     {!data.players.length && <T muted>Players you choose to save while logging appear here.</T>}
     {[...data.players].sort((a, b) => a.name.localeCompare(b.name)).map(player => <Card key={player.id} onPress={() => { setEditing(player); setName(player.name); setSingles(player.singlesRating?.toString() ?? ''); setDoubles(player.doublesRating?.toString() ?? ''); setError(undefined); }} label={`Edit ${player.name}`}>
