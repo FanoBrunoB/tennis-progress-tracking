@@ -40,8 +40,8 @@
     "typecheck": "tsc --noEmit",
     "build": "expo export --platform web",
     "test": "node --experimental-strip-types --test src/domain/*.test.ts src/data/*.test.ts",
-    "predeploy": "expo export -p web && cp dist/index.html dist/404.html",
-    "deploy": "gh-pages --nojekyll -d dist"
+    "predeploy": "expo export -p web && cp dist/index.html dist/404.html && : > dist/.gitignore",
+    "deploy": "gh-pages --nojekyll --dotfiles -d dist"
   },
   "private": true
 }
