@@ -25,6 +25,9 @@
     "plugins": [
       "expo-router",
       "expo-font"
-    ]
+    ],
+    "experiments": {
+      "baseUrl": "/tennis-progress-tracking"
+    }
   }
 }
