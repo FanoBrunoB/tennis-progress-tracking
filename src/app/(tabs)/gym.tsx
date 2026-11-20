@@ -19,7 +19,7 @@ export default function GymScreen() {
     <Segments value={tab} options={['Activity', 'Routines']} onChange={setTab} />
     {tab === 'Activity' ? <>
       <T muted style={{ lineHeight: 22 }}><T heading style={{ fontSize: 22 }}>{sessions.length}</T> sessions this month · {(['Legs', 'Push', 'Pull'] as const).map(type => `${type} ${sessions.filter(s => s.type === type).length}`).join(' · ')}</T>
-      {newestFirst(data.gym).map(session => <Card key={session.id} onPress={() => router.push({ pathname: '/log', params: { collection: 'gym', id: session.id } })} label={`Edit gym session on ${session.date}`}>
+      {newestFirst(data.gym).map(session => <Card key={session.id} onPress={() => router.push({ pathname: '/log', params: { collection: 'gym', id: session.id } })} label={`View gym session on ${session.date}`}>
         <View style={styles.between}><View style={styles.row}><T muted style={{ fontSize: 12 }}>{dateLabel(session.date)}</T><Badge>{session.type}</Badge></View><T muted style={{ fontSize: 12 }}>{session.exercises.length} exercises</T></View>
         <T heading style={{ fontSize: 24 }}>{session.routineName}</T>
         <View style={{ gap: 5 }}>{session.exercises.slice(0, 3).map(e => <View key={e.id} style={styles.between}><T muted style={{ flex: 1 }}>{e.name}</T><T style={{ fontFamily: fonts.bold }}>{e.sets} × {e.reps} · {e.weight === undefined ? 'BW' : `${e.weight} ${e.unit}`}</T>{exerciseChanged(e, session.templateExercises.find(t => t.id === e.id)) && <Dot color="#FF8A3D" size={7} />}</View>)}</View>

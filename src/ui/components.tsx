@@ -37,11 +37,11 @@ export function Card({ children, style, onPress, label }: { children: React.Reac
   const background = StyleSheet.flatten(cardStyle)?.backgroundColor;
   return <SurfaceContext.Provider value={typeof background === 'string' ? background : theme.card}>{onPress ? <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} style={cardStyle}>{children}</Pressable> : <View style={cardStyle}>{children}</View>}</SurfaceContext.Provider>;
 }
-export function Field({ label, error, style, ...props }: TextInputProps & { label?: string; error?: string; style?: StyleProp<TextStyle> }) {
+export function Field({ label, error, style, keyboardType, onChangeText, ...props }: TextInputProps & { label?: string; error?: string; style?: StyleProp<TextStyle> }) {
   const { theme } = useApp();
   return <View style={{ flex: 1, gap: 7 }}>
     {label && <T muted style={{ fontSize: 12, fontFamily: fonts.medium }}>{label}</T>}
-    <TextInput {...props} accessibilityLabel={props.accessibilityLabel ?? label} placeholderTextColor={theme.muted} style={[{ color: theme.text, backgroundColor: theme.deep, borderWidth: 1, borderColor: error ? '#FFAA85' : theme.border, borderRadius: 12, padding: 12, minHeight: 44, fontSize: 15, fontFamily: fonts.medium }, style]} />
+    <TextInput {...props} keyboardType={keyboardType} onChangeText={text => onChangeText?.(keyboardType === 'decimal-pad' ? text.replace(',', '.') : text)} accessibilityLabel={props.accessibilityLabel ?? label} placeholderTextColor={theme.muted} style={[{ color: theme.text, backgroundColor: theme.deep, borderWidth: 1, borderColor: error ? '#FFAA85' : theme.border, borderRadius: 12, padding: 12, minHeight: 44, fontSize: Platform.OS === 'web' ? 16 : 15, fontFamily: fonts.medium }, style]} />
     {error && <T accessibilityRole="alert" style={{ color: '#FFD4BA', fontSize: 12 }}>{error}</T>}
   </View>;
 }

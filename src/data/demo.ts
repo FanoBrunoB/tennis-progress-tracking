@@ -41,5 +41,5 @@ export function demoData(id: () => string, today = new Date()): Database {
     { ...meta(), type: 'Football', date: day(8), minutes: 75, me: 5, opponent: 3 },
     { ...meta(), type: 'Padel', date: day(0), minutes: 80, sets: [{ me: 6, opponent: 4 }, { me: 3, opponent: 6 }, { me: 7, opponent: 5 }] },
   ];
-  return { players, tennis, routines, gym, other };
+  return { players, tennis, routines, gym, other, ratings: [] };
 }

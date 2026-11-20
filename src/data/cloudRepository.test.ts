@@ -2,7 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { copyLocalToEmptyCloud, createCloudRepository, type DocumentStore } from './cloudRepository.ts';
 import { createLocalRepository, type Storage } from './repository.ts';
-import type { Collection, Match, Player } from '../domain/models.ts';
+import type { Collection, Match, Player, RatingEntry } from '../domain/models.ts';
 
 const player: Player = { id: 'p1', createdAt: '2026-11-19T10:00:00Z', updatedAt: '2026-11-19T10:00:00Z', name: 'Alex', singlesRating: 25.8, doublesRating: 22 };
 /** In-memory stand-in for Firestore: one JSON document per record, atomic batches. */
@@ -44,6 +44,14 @@ describe('cloud repository interface', () => {
     await Promise.all(Array.from({ length: 10 }, (_, i) => repo.save('players', { ...player, id: `${i}` })));
     assert.equal((await repo.read()).players.length, 10);
   });
+  it('syncs personal rating updates as separate records without replacing history', async () => {
+    const { store } = memoryStore(), repo = createCloudRepository(store);
+    const entry: RatingEntry = { id: 'r1', createdAt: player.createdAt, updatedAt: player.updatedAt, date: '2026-11-19', format: 'Singles', rating: 25.8 };
+    await repo.save('ratings', entry);
+    await repo.save('ratings', { ...entry, id: 'r2', format: 'Doubles', rating: 22 });
+    await repo.save('ratings', { ...entry, id: 'r3', date: '2026-11-20', rating: 26.1 });
+    assert.deepEqual((await createCloudRepository(store).read()).ratings.map(r => [r.format, r.rating]), [['Singles', 25.8], ['Doubles', 22], ['Singles', 26.1]]);
+  });
   it('commits player rating updates and match snapshots in one batch', async () => {
     const { store, batches } = memoryStore(), repo = createCloudRepository(store);
     const match: Match = { ...player, id: 'match', type: 'Match', date: '2026-11-19', format: 'Singles', surface: 'Hard', finish: 'Walkover', absentSide: 'opponent', sets: [], assessment: {}, opponents: [{ playerId: player.id, name: player.name, rating: 26 }] };
@@ -77,6 +85,16 @@ describe('cloud repository interface', () => {
 });
 
 describe('first sign-in migration', () => {
+  it('copies personal rating history and recognizes accounts containing only ratings', async () => {
+    const local = createLocalRepository(memoryStorage());
+    await local.save('ratings', { id: 'r1', createdAt: player.createdAt, updatedAt: player.updatedAt, date: '2026-11-19', format: 'Singles', rating: 25.8 });
+    const cloud = createCloudRepository(memoryStore().store);
+    assert.equal(await copyLocalToEmptyCloud(local, cloud), 1);
+    assert.deepEqual((await cloud.read()).ratings, (await local.read()).ratings);
+    await local.save('players', player);
+    assert.equal(await copyLocalToEmptyCloud(local, cloud), 0);
+    assert.deepEqual((await cloud.read()).players, []);
+  });
   it('copies local logs to an empty account in chunks', async () => {
     const local = createLocalRepository(memoryStorage());
     for (let i = 0; i < 5; i++) await local.save('players', { ...player, id: `${i}` });

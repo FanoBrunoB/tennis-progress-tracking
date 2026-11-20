@@ -1,26 +1,28 @@
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useApp } from '../state/AppProvider';
 import { TennisForm } from '../ui/TennisForm';
 import { GymForm, RoutineForm } from '../ui/GymForms';
 import { OtherForm } from '../ui/OtherForm';
 import { Button, Empty, Screen, closeForm } from '../ui/components';
+import { ActivityDetails } from '../ui/ActivityDetails';
 
 export default function LogScreen() {
-  const { kind, id, collection } = useLocalSearchParams<{ kind?: string; id?: string; collection?: string }>();
+  const { kind, id, collection, mode } = useLocalSearchParams<{ kind?: string; id?: string; collection?: string; mode?: string }>();
   const { data } = useApp();
+  const edit = () => router.setParams({ mode: 'edit' });
   if (id) {
     if (collection === 'tennis') {
       const record = data.tennis.find(a => a.id === id);
-      if (record) return <TennisForm key={id} initial={record} kind={record.type} />;
+      if (record) return mode === 'edit' ? <TennisForm key={id} initial={record} kind={record.type} /> : <ActivityDetails activity={{ collection: 'tennis', record }} onEdit={edit} />;
     } else if (collection === 'gym') {
       const record = data.gym.find(a => a.id === id);
-      if (record) return <GymForm key={id} initial={record} />;
+      if (record) return mode === 'edit' ? <GymForm key={id} initial={record} /> : <ActivityDetails activity={{ collection: 'gym', record }} onEdit={edit} />;
     } else if (collection === 'routines') {
       const record = data.routines.find(a => a.id === id);
       if (record) return <RoutineForm key={id} initial={record} />;
     } else if (collection === 'other') {
       const record = data.other.find(a => a.id === id);
-      if (record) return <OtherForm key={id} initial={record} kind={record.type} />;
+      if (record) return mode === 'edit' ? <OtherForm key={id} initial={record} kind={record.type} /> : <ActivityDetails activity={{ collection: 'other', record }} onEdit={edit} />;
     }
     return <Screen title="Not found"><Empty text="This record no longer exists." /><Button label="Go back" onPress={closeForm} /></Screen>;
   }

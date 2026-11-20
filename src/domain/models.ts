@@ -6,6 +6,11 @@ export interface RecordMeta {
 }
 
 export type Format = 'Singles' | 'Doubles';
+export interface RatingEntry extends RecordMeta {
+  date: string;
+  format: Format;
+  rating: number;
+}
 export type Surface = 'Hard' | 'Clay' | 'Carpet';
 export type Side = 'me' | 'opponent';
 export interface Player extends RecordMeta {
@@ -113,6 +118,7 @@ export interface Football extends OtherBase {
 }
 export type OtherActivity = Intervals | Run | Padel | Football;
 export interface Collections {
+  ratings: RatingEntry;
   players: Player;
   tennis: TennisActivity;
   routines: Routine;
@@ -121,7 +127,7 @@ export interface Collections {
 }
 export type Collection = keyof Collections;
 export type Database = { [K in Collection]: Collections[K][] };
-export const emptyDatabase = (): Database => ({ players: [], tennis: [], routines: [], gym: [], other: [] });
+export const emptyDatabase = (): Database => ({ ratings: [], players: [], tennis: [], routines: [], gym: [], other: [] });
 export const categoryColors = {
   Tennis: '#A8E063', Gym: '#A3ABB5', Football: '#FFFFFF',
   Padel: '#4C9BFF', Intervals: '#FF8A3D', Run: '#FFD23F',

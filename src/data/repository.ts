@@ -13,7 +13,7 @@ export interface Storage {
   getItem(key: string): Promise<string | null>;
   setItem(key: string, value: string): Promise<unknown>;
 }
-export const collections: Collection[] = ['players', 'tennis', 'routines', 'gym', 'other'];
+export const collections: Collection[] = ['players', 'tennis', 'routines', 'gym', 'other', 'ratings'];
 export function assertDatabase(value: unknown): asserts value is Database {
   if (!value || typeof value !== 'object') throw new Error('Stored data is not a valid Court Log database.');
   for (const key of collections) {
@@ -35,8 +35,11 @@ export function createLocalRepository(storage: Storage, key = 'court-log:v1'): R
     const raw = await storage.getItem(key);
     if (raw === null) return emptyDatabase();
     const envelope: unknown = JSON.parse(raw);
-    if (!envelope || typeof envelope !== 'object' || Reflect.get(envelope, 'version') !== 1) throw new Error('Unsupported Court Log data version.');
-    const data: unknown = Reflect.get(envelope, 'data');
+    if (!envelope || typeof envelope !== 'object') throw new Error('Unsupported Court Log data version.');
+    const version: unknown = Reflect.get(envelope, 'version');
+    if (version !== 1 && version !== 2) throw new Error('Unsupported Court Log data version.');
+    let data: unknown = Reflect.get(envelope, 'data');
+    if (version === 1 && data && typeof data === 'object' && !Object.hasOwn(data, 'ratings')) data = { ...data, ratings: [] };
     assertDatabase(data);
     return data;
   }
@@ -50,7 +53,7 @@ export function createLocalRepository(storage: Storage, key = 'court-log:v1'): R
           if (index >= 0) rows.splice(index, 1);
         } else put(data, change.collection, change.record);
       }
-      await storage.setItem(key, JSON.stringify({ version: 1, data }));
+      await storage.setItem(key, JSON.stringify({ version: 2, data }));
     });
     // Keep later writes usable after a failed write; the caller still receives the rejection.
     queue = operation.then(() => undefined, () => undefined);

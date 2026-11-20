@@ -1,5 +1,9 @@
-import type { Assessment, Format, Match, Player, Score, Side, TeamSet, TennisActivity } from './models.ts';
+import type { Assessment, Format, Match, Player, RatingEntry, Score, Side, TeamSet, TennisActivity } from './models.ts';
 import { newestFirst } from './dates.ts';
+
+export function personalRatingHistory(entries: readonly RatingEntry[], format: Format): RatingEntry[] {
+  return newestFirst(entries.filter(entry => entry.format === format));
+}
 
 const integer = (n: number) => Number.isInteger(n) && n >= 0;
 export const needsTiebreak = (score: Score) => !score.matchTiebreak &&

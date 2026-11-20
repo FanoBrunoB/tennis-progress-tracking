@@ -1,16 +1,30 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { contrastRatio, getSeasonTheme, readableText, themes } from './theme.ts';
-import { assessmentAverage, formResults, matchWinner, needsTiebreak, snapshotPlayer, validateMatch, validateSet, validateTeamSet, withRating } from './tennis.ts';
+import { assessmentAverage, formResults, matchWinner, needsTiebreak, personalRatingHistory, snapshotPlayer, validateMatch, validateSet, validateTeamSet, withRating } from './tennis.ts';
 import { activeRoutines, editRoutine, footballResult, intervalSummary, padelResult, parseTime, sessionFromRoutine } from './fitness.ts';
 import { calendarDays, validDate } from './dates.ts';
-import type { Match, Player, Routine, TennisActivity } from './models.ts';
+import type { Match, Player, RatingEntry, Routine, TennisActivity } from './models.ts';
 
 const meta = { id: 'm1', createdAt: '2026-11-19T10:00:00Z', updatedAt: '2026-11-19T10:00:00Z' };
 const match = (updates: Partial<Match> = {}): Match => ({
   ...meta, type: 'Match', date: '2026-11-19', format: 'Singles', surface: 'Hard',
   opponents: [{ name: 'Alex' }], sets: [{ me: 6, opponent: 4 }, { me: 6, opponent: 3 }],
   finish: 'Completed', assessment: {}, ...updates,
+});
+describe('personal rating history', () => {
+  it('keeps formats separate and orders backdated and same-day updates without overwriting them', () => {
+    const entries: RatingEntry[] = [
+      { ...meta, id: 'first', date: '2026-11-19', format: 'Singles', rating: 25.8 },
+      { ...meta, id: 'doubles', date: '2026-11-20', format: 'Doubles', rating: 22 },
+      { ...meta, id: 'backdated', date: '2026-10-01', createdAt: '2026-11-20T12:00:00Z', format: 'Singles', rating: 24 },
+      { ...meta, id: 'second', date: '2026-11-19', createdAt: '2026-11-19T12:00:00Z', format: 'Singles', rating: 26.1 },
+    ];
+    assert.deepEqual(personalRatingHistory(entries, 'Singles').map(r => [r.id, r.rating]), [['second', 26.1], ['first', 25.8], ['backdated', 24]]);
+    assert.deepEqual(personalRatingHistory(entries, 'Doubles').map(r => r.rating), [22]);
+    assert.equal(entries[0].id, 'first');
+    assert.deepEqual(personalRatingHistory([], 'Singles'), []);
+  });
 });
 describe('season boundaries (local calendar dates)', () => {
   for (const [month, day, season] of [
